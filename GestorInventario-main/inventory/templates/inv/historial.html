@@ -1,0 +1,66 @@
+{% extends 'inv/base.html' %}
+
+{% block body %}
+<h2>Historial de movimientos</h2>
+
+<div class="container-set-inventory">
+  <div class="add_buttons">
+    <div class="inventory-left">
+      <div class="button-group">
+        <input type="text" id="searchInput" placeholder="Buscar por nombre..." class="form-control" />
+      </div>
+
+      <div class="button-group">
+        <select id="filterType" class="form-select">
+          <option value="">Todos</option>
+          <option value="Sellantes">Sellantes</option>
+          <option value="Herramientas">Herramientas</option>
+          <option value="Pinturas">Pinturas</option>
+        </select>
+      </div>
+    </div>
+    <div class="button-group">
+      <label for="startDate">Desde:</label>
+      <input type="date" id="startDate" class="form-control">
+      <label for="endDate">Hasta:</label>
+      <input type="date" id="endDate" class="form-control">
+    </div>
+  </div>
+</div>
+
+
+<div id="tablaHistorial">
+  {% include 'inv/tabla_historial.html' %}
+</div>
+
+<script>
+  function updateTable() {
+  const query = document.getElementById("searchInput").value;
+  const type = document.getElementById("filterType").value;
+  const startDate = document.getElementById("startDate").value;
+  const endDate = document.getElementById("endDate").value;
+
+  let url = `{% url 'historial' %}?`;
+
+  if (query) url += `q=${encodeURIComponent(query)}&`;
+  if (type) url += `type=${encodeURIComponent(type)}&`;
+  if (startDate) url += `start=${encodeURIComponent(startDate)}&`;
+  if (endDate) url += `end=${encodeURIComponent(endDate)}`;
+
+  fetch(url)
+    .then(response => response.text())
+    .then(data => {
+      const parser = new DOMParser();
+      const htmlDoc = parser.parseFromString(data, "text/html");
+      const newContent = htmlDoc.querySelector("#tablaHistorial").innerHTML;
+      document.getElementById("tablaHistorial").innerHTML = newContent;
+    });
+}
+
+document.getElementById("searchInput").addEventListener("input", updateTable);
+document.getElementById("filterType").addEventListener("change", updateTable);
+document.getElementById("startDate").addEventListener("change", updateTable);
+document.getElementById("endDate").addEventListener("change", updateTable);
+
+</script>
+{% endblock %}
